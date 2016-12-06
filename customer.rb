@@ -8,17 +8,16 @@ class Customer
 
   def books_num
     count = 0
-    $DB.books.each {|b| count += 1 if b[:customer_id] == @id }
+    $DB.get_books.each {|b| count += 1 if b[:customer_id] == @id }
     count
   end
 
   def self.find(id)
-    customer = $DB.customers.select { |b| b[:id] == id }
-    return nil if customer.empty?
-    return Customer.new(customer[0])
+    return nil if $DB.get_customer(id).nil?
+    Customer.new($DB.get_customer(id))
   end
 
   def self.all
-    $DB.customers.map { |b| Customer.new(b) }
+    $DB.get_customers.map { |b| Customer.new(b) }
   end
 end

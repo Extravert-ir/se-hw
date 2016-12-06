@@ -19,37 +19,29 @@ class Book
   def give_to!(cust)
     return :already_taken if taken?
     return :too_much if cust.books_num > 2
-    $DB.books = $DB.books.map do |b|
-      if b[:id] == @id
-        b[:customer_id] = cust.id
-        b[:date_taken] = Date.today
-      end
-      b
-    end
+    d = Date.today
+    $DB.update_book(@id, customer_id: cust.id, date_taken: d)
+    @customer_id = cust.id
+    @date_taken = d
     :ok
   end
 
   def take!
     return :not_given if !taken?
 
-    $DB.books = $DB.books.map do |b|
-      if b[:id] == @id
-        b[:customer_id] = nil
-        b[:date_taken] = nil
-      end
-      b
-    end
+    $DB.update_book(@id, customer_id: nil, date_taken: nil)
+    @customer_id = nil
+    @date_taken = nil
     :ok
   end
 
   def self.find(id)
-    book = $DB.books.select { |b| b[:id] == id }
-    return nil if book.empty?
-    return Book.new(book[0])
+    return nil if $DB.get_book(id).nil?
+    Book.new($DB.get_book(id))
   end
 
 	def self.all
-    $DB.books.map { |b| Book.new(b) }
+    $DB.get_books.map { |b| Book.new(b) }
   end
 
   def self.expired
